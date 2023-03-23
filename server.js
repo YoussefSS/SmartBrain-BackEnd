@@ -1,5 +1,6 @@
 import express from 'express';
 import bcrypt from 'bcrypt-nodejs';
+import cors from 'cors';
 
 const app = express();
 
@@ -8,6 +9,7 @@ const database = {
         {
             id: '123',
             name: 'John',
+            password: 'cookies',
             email: 'john@gmail.com',
             entries: 0, // how many times this user submitted a photo
             joined: new Date()
@@ -15,6 +17,7 @@ const database = {
         {
             id: '124',
             name: 'Sally',
+            password: 'bananas',
             email: 'sally@gmail.com',
             entries: 0, // how many times this user submitted a photo
             joined: new Date()
@@ -30,7 +33,7 @@ const database = {
 }
 
 app.use(express.json());
-
+app.use(cors());
 
 app.get('/', (req, res) => {
     res.send(database.users);
