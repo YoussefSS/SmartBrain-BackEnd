@@ -54,6 +54,37 @@ app.post('/register', (req, res) => {
 })
 
 
+app.get('/profile/:id', (req, res) => {
+    let found = false;
+
+    database.users.forEach(user => {
+        if(user.id === req.params.id) {
+            found = true;
+            return res.json(user);
+        }
+    });
+
+    if(!found){
+        res.status(400).json("not found");
+    }
+})
+
+app.put('/image', (req, res) => {
+    let found = false;
+
+    database.users.forEach(user => {
+        if(user.id === req.body.id) {
+            found = true;
+            user.entries++;
+            return res.json(user.entries);
+        }
+    });
+
+    if(!found){
+        res.status(400).json("not found");
+    }
+})
+
 // In the listen function we can have a secondary parameter that's a function that happens after the listen happens
 app.listen(3000, () => {
     console.log('app is running on port 3000');
