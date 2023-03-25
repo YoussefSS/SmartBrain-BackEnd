@@ -16,10 +16,6 @@ const db = knex({
     }
 });
 
-console.log(db.select('*').from('users').then((data) => {
-    console.log(data)
-}));
-
 const app = express();
 
 const database = {
@@ -82,13 +78,19 @@ app.post('/register', (req, res) => {
         console.log(hash);
     })
 
-    db('users').insert({
+    db('users')
+    .returning('*')
+    .insert({
         email: req.body.email,
         name: req.body.name,
         joined: new Date()
-    }).then((data) => {console.log(data)})
-
-    res.json(database.users[database.users.length-1]);
+    })
+    .then((user) => { // response is the result of .returning
+        res.json(user[0]);
+    })
+    .catch((err) => {
+        res.status(400).json('unable to register'); // if you print out err, it will tell you that email already exists for example
+    })
 })
 
 
