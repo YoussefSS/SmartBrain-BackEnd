@@ -1,6 +1,24 @@
 import express from 'express';
 import bcrypt from 'bcrypt-nodejs';
 import cors from 'cors';
+import knex from 'knex';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const db = knex({
+    client: 'pg',
+    connection: {
+      host : '127.0.0.1',
+      user : 'postgres',
+      password : process.env.DATABASE_PASSWORD,
+      database : 'smart-brain'
+    }
+});
+
+console.log(db.select('*').from('users').then((data) => {
+    console.log(data)
+}));
 
 const app = express();
 
@@ -64,13 +82,11 @@ app.post('/register', (req, res) => {
         console.log(hash);
     })
 
-    database.users.push({
-        id: '125',
-        name: req.body.name,
+    db('users').insert({
         email: req.body.email,
-        entries: 0,
+        name: req.body.name,
         joined: new Date()
-    })
+    }).then((data) => {console.log(data)})
 
     res.json(database.users[database.users.length-1]);
 })
