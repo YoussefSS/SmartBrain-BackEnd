@@ -22,7 +22,7 @@ app.use(express.json());
 app.use(cors());
 
 app.get('/', (req, res) => {
-    res.send(database.users);
+    res.json('ok');
 })
 
 app.post('/signin', (req, res) => {
