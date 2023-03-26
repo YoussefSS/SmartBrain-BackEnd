@@ -113,19 +113,21 @@ app.get('/profile/:id', (req, res) => {
 })
 
 app.put('/image', (req, res) => {
-    let found = false;
+    
+    db('users').where('id', '=', req.body.id)
+    .increment('entries', 1)
+    .returning('entries')
+    .then((entries) => {
+        res.json(entries[0].entries);
+    })
+    .catch((err) => {
+        res.status(400).json('unable to get entries');
+    })
+    
+    /*.update({
+        entries:  // We use increment instead of grabbing the entries manually then incrementing it
+    })*/
 
-    database.users.forEach(user => {
-        if(user.id === req.body.id) {
-            found = true;
-            user.entries++;
-            return res.json(user.entries);
-        }
-    });
-
-    if(!found){
-        res.status(400).json("not found");
-    }
 })
 
 
