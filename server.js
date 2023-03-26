@@ -86,7 +86,7 @@ app.post('/register', (req, res) => {
         joined: new Date()
     })
     .then((user) => { // response is the result of .returning
-        res.json(user[0]);
+        res.json(user[0]); // returns an array of 1 item, so get the first item
     })
     .catch((err) => {
         res.status(400).json('unable to register'); // if you print out err, it will tell you that email already exists for example
@@ -95,18 +95,21 @@ app.post('/register', (req, res) => {
 
 
 app.get('/profile/:id', (req, res) => {
-    let found = false;
-
-    database.users.forEach(user => {
-        if(user.id === req.params.id) {
-            found = true;
-            return res.json(user);
+    db.select('*').from('users')
+    .where({
+        id: req.params.id
+    })
+    .then((user) => {
+        if(user.length > 0) {
+            res.json(user[0]) // returns an array of 1 item, so get the first item
         }
-    });
-
-    if(!found){
-        res.status(400).json("not found");
-    }
+        else {
+            res.status(400).json('Not found');
+        }
+    })
+    .catch((err) => {
+        res.status(400).json('Error getting user');
+    })
 })
 
 app.put('/image', (req, res) => {
