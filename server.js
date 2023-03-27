@@ -7,7 +7,7 @@ import dotenv from 'dotenv';
 import {handleRegister} from './controllers/register.js';
 import {handleSignIn} from './controllers/signin.js';
 import {handleProfileGet} from './controllers/profile.js';
-import {handleImage} from './controllers/image.js';
+import {handleApiCall, handleImage} from './controllers/image.js';
 
 dotenv.config();
 
@@ -31,6 +31,7 @@ app.post('/register', (req, res) => { handleRegister(req, res, db, bcrypt) });
 app.post('/signin', handleSignIn(db, bcrypt)); // can do this instead (currying?) check signin.js
 app.get('/profile/:id', (req, res) => { handleProfileGet(req, res, db) });
 app.put('/image', (req, res) => { handleImage(req, res, db) });
+app.post('/imageurl', (req, res) => { handleApiCall(req, res) });
 
 // In the listen function we can have a secondary parameter that's a function that happens after the listen happens
 app.listen(3000, () => {

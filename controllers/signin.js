@@ -1,4 +1,9 @@
 const handleSignIn = (db, bcrypt) => (req, res) => { // currying?
+    if(!req.body.email || !req.body.password)
+    {
+        return res.status(400).json('incorrect form submission'); // must return otherwise you'll get an error: 'Cannot set headers after they are sent to the client' as you'll have sent 2 responses
+    }
+    
     db.select('email', 'hash').from('login')
     .where('email', '=', req.body.email)
     .then((data) => {

@@ -1,6 +1,11 @@
 const handleRegister = (req, res, db, bcrypt) => {
     const bcryptHash = bcrypt.hashSync(req.body.password);
 
+    if(!req.body.email || !req.body.name || !req.body.password)
+    {
+        return res.status(400).json('incorrect form submission'); // must return otherwise you'll get an error: 'Cannot set headers after they are sent to the client' as you'll have sent 2 responses
+    }
+
     db.transaction((trx) => {
         trx.insert({
             hash: bcryptHash,
