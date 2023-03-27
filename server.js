@@ -4,6 +4,11 @@ import cors from 'cors';
 import knex from 'knex';
 import dotenv from 'dotenv';
 
+import {handleRegister} from './controllers/register.js';
+import {handleSignIn} from './controllers/signin.js';
+import {handleProfileGet} from './controllers/profile.js';
+import {handleImage} from './controllers/image.js';
+
 dotenv.config();
 
 const db = knex({
@@ -21,97 +26,11 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-app.get('/', (req, res) => {
-    res.json('ok');
-})
-
-app.post('/signin', (req, res) => {
-    db.select('email', 'hash').from('login')
-    .where('email', '=', req.body.email)
-    .then((data) => {
-        const isValid = bcrypt.compareSync(req.body.password, data[0].hash);
-        if(isValid) {
-            return db.select('*').from('users')
-                .where('email', '=', req.body.email)
-                .then((user) => {
-                    res.json(user[0])
-                })
-                .catch(err => res.status(400).json('unable to get user'));
-        }
-        else {
-            res.status(400).json('wrong credentials');
-        }
-    })
-    .catch(err => res.status(400).json('wrong credentials'));
-})
-
-app.post('/register', (req, res) => {
-    const bcryptHash = bcrypt.hashSync(req.body.password);
-
-    db.transaction((trx) => {
-        trx.insert({
-            hash: bcryptHash,
-            email: req.body.email
-        })
-        .into('login')
-        .returning('email')
-        .then((loginEmail) => {
-            return trx('users')
-            .returning('*')
-            .insert({
-                email: loginEmail[0].email,
-                name: req.body.name,
-                joined: new Date()
-            })
-            .then((user) => { // response is the result of .returning
-                res.json(user[0]); // returns an array of 1 item, so get the first item
-            })
-        })
-        .then(trx.commit) // If the transaction is all good, then commit
-        .catch(trx.rollback) // If there was a problem with the transaction, ie one of the operations failed, rollback everything you did
-    })
-    .catch((err) => {
-        res.status(400).json('unable to register'); // if you print out err, it will tell you that email already exists for example
-    })
-})
-
-
-app.get('/profile/:id', (req, res) => {
-    db.select('*').from('users')
-    .where({
-        id: req.params.id
-    })
-    .then((user) => {
-        if(user.length > 0) {
-            res.json(user[0]) // returns an array of 1 item, so get the first item
-        }
-        else {
-            res.status(400).json('Not found');
-        }
-    })
-    .catch((err) => {
-        res.status(400).json('Error getting user');
-    })
-})
-
-app.put('/image', (req, res) => {
-    db('users').where('id', '=', req.body.id)
-    .increment('entries', 1)
-    .returning('entries')
-    .then((entries) => {
-        res.json(entries[0].entries);
-    })
-    .catch((err) => {
-        res.status(400).json('unable to get entries');
-    })
-    
-    /*.update({
-        entries:  // We use increment instead of grabbing the entries manually then incrementing it
-    })*/
-})
-
-
-
+app.get('/', (req, res) => { res.json('ok') })
+app.post('/register', (req, res) => { handleRegister(req, res, db, bcrypt) });
+app.post('/signin', handleSignIn(db, bcrypt)); // can do this instead (currying?) check signin.js
+app.get('/profile/:id', (req, res) => { handleProfileGet(req, res, db) });
+app.put('/image', (req, res) => { handleImage(req, res, db) });
 
 // In the listen function we can have a secondary parameter that's a function that happens after the listen happens
 app.listen(3000, () => {
